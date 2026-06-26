@@ -9,6 +9,19 @@ client.commands = new Collection();
 // 1. Load Commands
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
+// Add this to the very bottom of index.js
+const http = require('http');
+
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Bot is running!');
+});
+
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+});
+
 
 for (const folder of commandFolders) {
     const commandsPath = path.join(foldersPath, folder);
