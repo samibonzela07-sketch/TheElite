@@ -1,30 +1,40 @@
 const { REST, Routes } = require('discord.js');
+const fs = require('node:fs');
+const path = require('node:path');
 
-// These are the secret keys the bot needs to talk to Discord
-const token = process.env.TOKEN;
-const clientId = process.env.CLIENT_ID;
-const guildId = process.env.GUILD_ID;
-
-// For now, our command list is empty. We will fill this up later!
 const commands = [];
+// This assumes your commands are in a folder named 'commands'
+const foldersPath = path.join(__dirname, 'commands');
+const commandFolders = fs.readdirSync(foldersPath);
 
-// Prepare the tool that will send the commands to Discord
-const rest = new REST({ version: '10' }).setToken(token);
+for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
+    for (const file of commandFiles) {
+        const filePath = path.join(commandsPath, file);
+        const command = require(filePath);
+        // Only register if the file has 'data' and 'execute'
+        if ('data' in command && 'execute' in command) {
+            commands.push(command.data.toJSON());
+        } else {
+            console.log(`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`);
+        }
+    }
+}
 
-// This function pushes the commands to your specific server (Guild)
+const rest = new REST().setToken(process.env.TOKEN);
+
 (async () => {
     try {
-        console.log('🐉 Started refreshing application (/) commands.');
+        console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-        // This line sends the data directly to Discord's setup system
-        await rest.put(
-            Routes.applicationGuildCommands(clientId, guildId),
+        const data = await rest.put(
+            Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands },
         );
 
-        console.log('🐉 Successfully reloaded application (/) commands.');
+        console.log(`Successfully reloaded ${data.length} application (/) commands.`);
     } catch (error) {
-        // If anything goes wrong, it will print the error here
         console.error(error);
     }
 })();
