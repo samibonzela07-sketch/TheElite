@@ -1,0 +1,16 @@
+{
+  "name": "the-elite",
+  "version": "1.0.0",
+  "description": "The Elite - Dragon Soul Discord Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Shahana Khan",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.21.0",
+    "dotenv": "^16.4.7",
+    "sqlite3": "^5.1.7"
+  }
+}
