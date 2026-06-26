@@ -1,7 +1,7 @@
-
 const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const path = require('path');
 
-// Create a new bot client (the connection to Discord)
+// Create a new bot client
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
@@ -12,18 +12,22 @@ const client = new Client({
     ]
 });
 
-// A collection is like a smart folder to hold all our future commands
+// Smart folder to hold our commands
 client.commands = new Collection();
 
-// When the bot is ready and logged in, print a message in the console
+// --- CONNECT OUR HANDLERS ---
+// This tells the brain to look at the handler files and turn them on
+require('./handlers/command-handler')(client);
+require('./handlers/event-handler')(client);
+
+// When the bot is ready, print a message
 client.once('ready', () => {
     console.log(`🐉 The Elite is online! Protecting Dragon Soul.`);
     
-    // Set the custom status you requested
     if (client.user) {
-        client.user.setActivity('Protecting Dragon Soul', { type: 4 }); // Type 4 is "Custom Status"
+        client.user.setActivity('Protecting Dragon Soul', { type: 4 });
     }
 });
 
-// Log the bot into Discord using the secret TOKEN saved on Render
+// Log into Discord
 client.login(process.env.TOKEN);
