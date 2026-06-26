@@ -1,33 +1,38 @@
-const { Client, GatewayIntentBits, Collection } = require('discord.js');
-const path = require('path');
+// --- RENDER COMPATIBILITY PORT BINDING ---
+const http = require('http');
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('The Elite Bot is running smoothly!\n');
+});
+const PORT = process.env.PORT || 10000;
+server.listen(PORT, '0.0.0.0', () => {
+    console.log(`📡 Render port binding active on port ${PORT}`);
+});
+// ──────────────────────────────────────────
 
-// Create a new bot client
+const { Client, GatewayIntentBits, Collection } = require('discord.js');
+const fs = require('fs');
+const path = require('path');
+const config = require('./config/config');
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildVoiceStates
+        GatewayIntentBits.GuildMembers
     ]
 });
 
-// Smart folder to hold our commands
 client.commands = new Collection();
 
-// --- CONNECT OUR HANDLERS ---
-// This tells the brain to look at the handler files and turn them on
-require('./handlers/command-handler')(client);
-require('./handlers/event-handler')(client);
-
-// When the bot is ready, print a message
-client.once('ready', () => {
-    console.log(`🐉 The Elite is online! Protecting Dragon Soul.`);
-    
-    if (client.user) {
-        client.user.setActivity('Protecting Dragon Soul', { type: 4 });
+// Dynamically load handlers
+const handlersPath = path.join(__dirname, 'handlers');
+if (fs.existsSync(handlersPath)) {
+    const handlerFiles = fs.readdirSync(handlersPath).filter(file => file.endsWith('.js'));
+    for (const file of handlerFiles) {
+        require(`./handlers/${file}`)(client);
     }
-});
+}
 
-// Log into Discord
 client.login(process.env.TOKEN);
